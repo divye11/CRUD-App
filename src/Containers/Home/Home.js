@@ -251,6 +251,7 @@ function Home() {
           });
         })
         .catch((err) => {
+          console.log(err);
           dispatch({
             type: actions.CHANGE_LOADING,
             payload: false,
@@ -295,6 +296,7 @@ function Home() {
           });
         })
         .catch((err) => {
+          console.log(err);
           dispatch({
             type: actions.CHANGE_LOADING,
             payload: false,
