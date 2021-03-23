@@ -55,7 +55,7 @@ function Home() {
       window.removeEventListener('offline', updateNetwork);
       window.removeEventListener('online', updateNetwork);
     };
-  });
+  }, []);
 
   useEffect(() => {
     dispatch({
