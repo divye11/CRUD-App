@@ -43,8 +43,8 @@ self.addEventListener('activate', (evt) => {
 // fetch events
 self.addEventListener('fetch', (evt) => {
   if (
-    evt.request.url.indexOf('jsonplaceholder.typicode.com') > -1 ||
-    evt.request.url.indexOf('.vercel.app/') > -1
+    evt.request.url.indexOf('jsonplaceholder.typicode.com') > -1
+    // evt.request.url.indexOf('.vercel.app/') > -1
   ) {
     return;
   } else {
