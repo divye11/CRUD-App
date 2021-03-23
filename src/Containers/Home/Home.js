@@ -47,6 +47,9 @@ function Home() {
   function updateNetwork() {
     setInternet(window.navigator.onLine, () => {
       console.log('internet status changed', window.navigator.onLine);
+      if (internet && offlineTasks.length > 0) {
+        PerformPendingReq();
+      }
     });
   }
 
@@ -64,9 +67,6 @@ function Home() {
       type: actions.CHANGE_INTERNET_STATUS,
       payload: internet,
     });
-    if (internet && offlineTasks.length > 0) {
-      PerformPendingReq();
-    }
   }, [internet]);
 
   const PerformPendingReq = () => {

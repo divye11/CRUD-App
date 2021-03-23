@@ -38,7 +38,7 @@ export function TaskProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, localState || initialState);
 
   useEffect(() => {
-    localStorage.setItem('internet', JSON.stringify(state));
+    localStorage.setItem('tasks', JSON.stringify(state));
   }, [state]);
 
   const value = {
