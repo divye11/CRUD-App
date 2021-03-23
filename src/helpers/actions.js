@@ -1,5 +1,8 @@
 const actions = {
   SET_INTERNET_STATUS: 'SET_INTERNET_STATUS',
+  ENQUEUE_TASK: 'ENQUEUE_TASK',
+  REMOVE_TASK: 'REMOVE_TASK',
+  SYNC_DIALOG_STATE: 'SYNC_DIALOG_STATE',
 };
 
 export default actions;

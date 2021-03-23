@@ -15,6 +15,8 @@ import { INITIAL_STATE, reducer } from './Reducer';
 import { fetchTodos, createTodo, UpdateTodo, RemoveTodo } from '../../API/Home';
 import useNetwork from '../../helpers/InternetStatus';
 import { InternetContext } from '../../Contexts/InternetContext';
+import { TaskContext } from '../../Contexts/TaskContext';
+
 import {
   getTodos,
   addTodoOffline,
@@ -39,30 +41,30 @@ function Home() {
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const { internet, setInternet } = useContext(InternetContext);
-
+  const { QueueTaskContext, RemoveTaskContext, offlineTasks } = useContext(
+    TaskContext,
+  );
   function updateNetwork() {
-    console.log('changin status');
     setInternet(window.navigator.onLine, () => {
       console.log('internet status changed', window.navigator.onLine);
     });
   }
 
   useEffect(() => {
-    console.log('calling here');
     window.addEventListener('offline', updateNetwork);
     window.addEventListener('online', updateNetwork);
     return () => {
       window.removeEventListener('offline', updateNetwork);
       window.removeEventListener('online', updateNetwork);
     };
-  }, []);
+  });
 
   useEffect(() => {
     dispatch({
       type: actions.CHANGE_INTERNET_STATUS,
       payload: internet,
     });
-    if (internet && state.offlineTasks.length > 0) {
+    if (internet && offlineTasks.length > 0) {
       PerformPendingReq();
     }
   }, [internet]);
@@ -90,10 +92,11 @@ function Home() {
   const PerformPendingDeleteRequests = async (task) => {
     await axios[task.method](task.url).then((res) => {
       console.log(res);
-      dispatch({
-        type: actions.REMOVE_TASK,
-        payload: task,
-      });
+      // dispatch({
+      //   type: actions.REMOVE_TASK,
+      //   payload: task,
+      // });
+      RemoveTaskContext(task);
       dispatch({
         type: actions.SYNC_DIALOG_STATE,
         payload: false,
@@ -104,10 +107,12 @@ function Home() {
   const PerformPendingPatchRequests = async (task) => {
     await axios[task.method](task.url, task.payload).then((res) => {
       console.log(res);
-      dispatch({
-        type: actions.REMOVE_TASK,
-        payload: task,
-      });
+      // dispatch({
+      //   type: actions.REMOVE_TASK,
+      //   payload: task,
+      // });
+      RemoveTaskContext(task);
+
       dispatch({
         type: actions.SYNC_DIALOG_STATE,
         payload: false,
@@ -118,10 +123,12 @@ function Home() {
   const PerformPendingPostRequests = async (task) => {
     await axios[task.method](task.url, task.payload).then((res) => {
       console.log(res);
-      dispatch({
-        type: actions.REMOVE_TASK,
-        payload: task,
-      });
+      // dispatch({
+      //   type: actions.REMOVE_TASK,
+      //   payload: task,
+      // });
+      RemoveTaskContext(task);
+
       dispatch({
         type: actions.SYNC_DIALOG_STATE,
         payload: false,
@@ -131,6 +138,9 @@ function Home() {
 
   useEffect(() => {
     console.log('component did  mount');
+    setInternet(window.navigator.onLine, () => {
+      console.log('setting internet val init', window.navigator.onLine);
+    });
     dispatch({
       type: actions.CHANGE_LOADING,
       payload: true,
@@ -139,7 +149,7 @@ function Home() {
       type: actions.CHANGE_INTERNET_STATUS,
       payload: internet,
     });
-    console.log(internet);
+    // console.log(internet);
     if (internet) {
       console.log('internet available');
       fetchTodos()
@@ -219,12 +229,17 @@ function Home() {
           type: actions.CHANGE_LOADING,
           payload: false,
         });
-        dispatch({
-          type: actions.ENQUEUE_TASK,
-          method: 'post',
-          url: 'https://jsonplaceholder.typicode.com/todos',
-          payload: data,
-        });
+        // dispatch({
+        //   type: actions.ENQUEUE_TASK,
+        //   method: 'post',
+        //   url: 'https://jsonplaceholder.typicode.com/todos',
+        //   payload: data,
+        // });
+        QueueTaskContext(
+          data,
+          'post',
+          'https://jsonplaceholder.typicode.com/todos',
+        );
         dispatch({
           type: actions.ADD_TASK,
           payload: res,
@@ -268,11 +283,16 @@ function Home() {
           type: actions.REMOVE_TODO,
           payload: id,
         });
-        dispatch({
-          type: actions.ENQUEUE_TASK,
-          method: 'delete',
-          url: `https://jsonplaceholder.typicode.com/todos/${id}`,
-        });
+        // dispatch({
+        //   type: actions.ENQUEUE_TASK,
+        //   method: 'delete',
+        //   url: `https://jsonplaceholder.typicode.com/todos/${id}`,
+        // });
+        QueueTaskContext(
+          {},
+          'delete',
+          `https://jsonplaceholder.typicode.com/todos/${id}`,
+        );
       });
     }
   };
@@ -309,12 +329,17 @@ function Home() {
           type: actions.UPDATE_TASK_OFFLINE,
           payload: res,
         });
-        dispatch({
-          type: actions.ENQUEUE_TASK,
-          method: 'patch',
-          url: `https://jsonplaceholder.typicode.com/todos/${data.id}`,
-          payload: datum,
-        });
+        // dispatch({
+        //   type: actions.ENQUEUE_TASK,
+        //   method: 'patch',
+        //   url: `https://jsonplaceholder.typicode.com/todos/${data.id}`,
+        //   payload: datum,
+        // });
+        QueueTaskContext(
+          datum,
+          'patch',
+          `https://jsonplaceholder.typicode.com/todos/${data.id}`,
+        );
       });
     }
   };

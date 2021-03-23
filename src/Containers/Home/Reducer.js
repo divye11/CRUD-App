@@ -71,24 +71,24 @@ export function reducer(state = INITIAL_STATE, action) {
       return { ...state, internetAvailable: action.payload };
     case actions.REHYDRATE_TASKS:
       return { ...state, tasks: action.payload };
-    case actions.ENQUEUE_TASK:
-      const task = {
-        payload: action.payload,
-        id: Math.random(),
-        method: action.method,
-        url: action.url,
-      };
-      return {
-        ...state,
-        offlineTasks: [...state.offlineTasks, task],
-      };
-    case actions.REMOVE_TASK:
-      return {
-        ...state,
-        offlineTasks: state.offlineTasks.filter(
-          (task) => task.id !== action.payload.id,
-        ),
-      };
+    // case actions.ENQUEUE_TASK:
+    //   const task = {
+    //     payload: action.payload,
+    //     id: Math.random(),
+    //     method: action.method,
+    //     url: action.url,
+    //   };
+    //   return {
+    //     ...state,
+    //     offlineTasks: [...state.offlineTasks, task],
+    //   };
+    // case actions.REMOVE_TASK:
+    //   return {
+    //     ...state,
+    //     offlineTasks: state.offlineTasks.filter(
+    //       (task) => task.id !== action.payload.id,
+    //     ),
+    //   };
     case actions.SYNC_DIALOG_STATE:
       return {
         ...state,
