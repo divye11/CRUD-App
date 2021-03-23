@@ -24,6 +24,7 @@ function CustomDialog(props) {
     Title = 'Dialog',
     Description = '',
     submit = () => {},
+    actions = true,
   } = props;
   return (
     <Dialog
@@ -40,14 +41,18 @@ function CustomDialog(props) {
         </DialogContentText>
         {children}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary">
-          Cancel
-        </Button>
-        <Button onClick={submit} color="primary">
-          Apply
-        </Button>
-      </DialogActions>
+      {actions ? (
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={submit} color="primary">
+            Apply
+          </Button>
+        </DialogActions>
+      ) : (
+        <></>
+      )}
     </Dialog>
   );
 }

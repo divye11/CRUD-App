@@ -32,8 +32,9 @@ export const createTodo = (data) => {
 
 export const UpdateTodo = (data) => {
   return new Promise((resolve, reject) => {
+    console.log(data);
     axios
-      .patch(`https://jsonplaceholder.typicode.com/todos/${data.id}`)
+      .patch(`https://jsonplaceholder.typicode.com/todos/${data.id}`, data)
       .then((res) => {
         resolve(res);
       })

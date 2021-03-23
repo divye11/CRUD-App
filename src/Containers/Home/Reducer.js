@@ -9,6 +9,8 @@ export const INITIAL_STATE = {
     title: '',
   },
   internetAvailable: true,
+  offlineTasks: [],
+  syncDialog: false,
 };
 
 export function reducer(state = INITIAL_STATE, action) {
@@ -40,6 +42,20 @@ export function reducer(state = INITIAL_STATE, action) {
           }
         }, []),
       };
+    case actions.UPDATE_TASK_OFFLINE:
+      return {
+        ...state,
+        loading: false,
+        tasks: state.tasks.reduce((acc, item) => {
+          if (item.id === action.payload.id) {
+            acc.push(action.payload);
+            return acc;
+          } else {
+            acc.push(item);
+            return acc;
+          }
+        }, []),
+      };
     case actions.SET_CURRENT_TASK:
       return { ...state, currentTask: action.payload };
     case actions.CHANGE_CURRENTTASK:
@@ -54,7 +70,29 @@ export function reducer(state = INITIAL_STATE, action) {
     case actions.CHANGE_INTERNET_STATUS:
       return { ...state, internetAvailable: action.payload };
     case actions.REHYDRATE_TASKS:
-      console.log(action.payload);
       return { ...state, tasks: action.payload };
+    case actions.ENQUEUE_TASK:
+      const task = {
+        payload: action.payload,
+        id: Math.random(),
+        method: action.method,
+        url: action.url,
+      };
+      return {
+        ...state,
+        offlineTasks: [...state.offlineTasks, task],
+      };
+    case actions.REMOVE_TASK:
+      return {
+        ...state,
+        offlineTasks: state.offlineTasks.filter(
+          (task) => task.id !== action.payload.id,
+        ),
+      };
+    case actions.SYNC_DIALOG_STATE:
+      return {
+        ...state,
+        syncDialog: action.payload,
+      };
   }
 }

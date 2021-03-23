@@ -8,13 +8,19 @@ import {
   Grid,
   Checkbox,
   LinearProgress,
-  Menu,
-  MenuItem,
+  CircularProgress,
 } from '@material-ui/core';
 
 import { INITIAL_STATE, reducer } from './Reducer';
 import { fetchTodos, createTodo, UpdateTodo, RemoveTodo } from '../../API/Home';
 import useNetwork from '../../helpers/InternetStatus';
+import {
+  getTodos,
+  addTodoOffline,
+  deleteAndSetTodos,
+  deleteTodo,
+  updateTodoOffline,
+} from '../../Indexdb/todosDb';
 
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import AddBoxIcon from '@material-ui/icons/AddBox';
@@ -26,6 +32,7 @@ import Alert from '@material-ui/lab/Alert';
 
 import useStyles from './HomeStyles';
 import actions from './types';
+import axios from 'axios';
 
 function Home() {
   const classes = useStyles();
@@ -37,31 +44,115 @@ function Home() {
       type: actions.CHANGE_INTERNET_STATUS,
       payload: internet,
     });
+    if (internet && state.offlineTasks.length > 0) {
+      PerformPendingReq();
+    }
   }, [internet]);
+
+  const PerformPendingReq = () => {
+    dispatch({
+      type: actions.SYNC_DIALOG_STATE,
+      payload: true,
+    });
+    state.offlineTasks.forEach(async (task) => {
+      dispatch({
+        type: actions.SYNC_DIALOG_STATE,
+        payload: true,
+      });
+      if (task.method === 'post') {
+        await PerformPendingPostRequests(task);
+      } else if (task.method === 'patch') {
+        await PerformPendingPatchRequests(task);
+      } else if (task.method === 'delete') {
+        await PerformPendingDeleteRequests(task);
+      }
+    });
+  };
+
+  const PerformPendingDeleteRequests = async (task) => {
+    await axios[task.method](task.url).then((res) => {
+      console.log(res);
+      dispatch({
+        type: actions.REMOVE_TASK,
+        payload: task,
+      });
+      dispatch({
+        type: actions.SYNC_DIALOG_STATE,
+        payload: false,
+      });
+    });
+  };
+
+  const PerformPendingPatchRequests = async (task) => {
+    await axios[task.method](task.url, task.payload).then((res) => {
+      console.log(res);
+      dispatch({
+        type: actions.REMOVE_TASK,
+        payload: task,
+      });
+      dispatch({
+        type: actions.SYNC_DIALOG_STATE,
+        payload: false,
+      });
+    });
+  };
+
+  const PerformPendingPostRequests = async (task) => {
+    await axios[task.method](task.url, task.payload).then((res) => {
+      console.log(res);
+      dispatch({
+        type: actions.REMOVE_TASK,
+        payload: task,
+      });
+      dispatch({
+        type: actions.SYNC_DIALOG_STATE,
+        payload: false,
+      });
+    });
+  };
 
   useEffect(() => {
     dispatch({
       type: actions.CHANGE_LOADING,
       payload: true,
     });
-    fetchTodos()
-      .then((res) => {
+    if (internet) {
+      console.log('internet available');
+      fetchTodos()
+        .then((res) => {
+          dispatch({
+            type: actions.CHANGE_LOADING,
+            payload: false,
+          });
+          dispatch({
+            type: actions.REHYDRATE_TASKS,
+            payload: res.data,
+          });
+          deleteAndSetTodos(res.data, (res) => {
+            console.log(res);
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          dispatch({
+            type: actions.CHANGE_LOADING,
+            payload: false,
+          });
+        });
+    } else {
+      console.log('internet not available');
+      getTodos((data) => {
+        console.log(data);
         dispatch({
           type: actions.CHANGE_LOADING,
           payload: false,
         });
         dispatch({
           type: actions.REHYDRATE_TASKS,
-          payload: res.data,
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        dispatch({
-          type: actions.CHANGE_LOADING,
-          payload: false,
+          payload: data,
         });
       });
+    }
   }, []);
 
   const addTodo = () => {
@@ -69,41 +160,81 @@ function Home() {
       title: state.newTask,
       userId: 1,
       completed: false,
-      id: 1,
+      id: Math.random(),
     };
     dispatch({
       type: actions.CHANGE_LOADING,
       payload: true,
     });
-    createTodo(data)
-      .then((res) => {
-        console.log(res);
+    if (internet) {
+      createTodo(data)
+        .then((res) => {
+          console.log(res);
+          dispatch({
+            type: actions.CHANGE_LOADING,
+            payload: false,
+          });
+          dispatch({
+            type: actions.ADD_TASK,
+            payload: res.data,
+          });
+          addTodoOffline(data, (res) => {
+            console.log('added to offline DB as well', res);
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          dispatch({
+            type: actions.CHANGE_LOADING,
+            payload: false,
+          });
+        });
+    } else {
+      addTodoOffline(data, (res) => {
         dispatch({
           type: actions.CHANGE_LOADING,
           payload: false,
+        });
+        dispatch({
+          type: actions.ENQUEUE_TASK,
+          method: 'post',
+          url: 'https://jsonplaceholder.typicode.com/todos',
+          payload: data,
         });
         dispatch({
           type: actions.ADD_TASK,
-          payload: res.data,
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        dispatch({
-          type: actions.CHANGE_LOADING,
-          payload: false,
+          payload: res,
         });
       });
+    }
   };
 
   const RemoveTask = (id) => {
-    console.log(id);
     dispatch({
       type: actions.CHANGE_LOADING,
       payload: true,
     });
-    RemoveTodo(id)
-      .then(() => {
+    if (internet) {
+      RemoveTodo(id)
+        .then(() => {
+          dispatch({
+            type: actions.CHANGE_LOADING,
+            payload: false,
+          });
+          dispatch({
+            type: actions.REMOVE_TODO,
+            payload: id,
+          });
+        })
+        .catch((err) => {
+          dispatch({
+            type: actions.CHANGE_LOADING,
+            payload: false,
+          });
+          console.log(err);
+        });
+    } else {
+      deleteTodo(id, () => {
         dispatch({
           type: actions.CHANGE_LOADING,
           payload: false,
@@ -112,14 +243,13 @@ function Home() {
           type: actions.REMOVE_TODO,
           payload: id,
         });
-      })
-      .catch((err) => {
         dispatch({
-          type: actions.CHANGE_LOADING,
-          payload: false,
+          type: actions.ENQUEUE_TASK,
+          method: 'delete',
+          url: `https://jsonplaceholder.typicode.com/todos/${id}`,
         });
-        console.log(err);
       });
+    }
   };
 
   const updateVal = (data, field, payload) => {
@@ -127,23 +257,40 @@ function Home() {
       type: actions.CHANGE_LOADING,
       payload: true,
     });
-    UpdateTodo(data)
-      .then(() => {
-        console.log(field, payload);
-        dispatch({
-          type: actions.UPDATE_TASK,
-          field: field,
-          data: data,
-          payload: payload,
+    let datum = {};
+    datum[field] = payload;
+    datum['id'] = data.id;
+    if (internet) {
+      UpdateTodo(datum)
+        .then((res) => {
+          dispatch({
+            type: actions.UPDATE_TASK,
+            field: field,
+            data: res.data,
+            payload: payload,
+          });
+        })
+        .catch((err) => {
+          dispatch({
+            type: actions.CHANGE_LOADING,
+            payload: false,
+          });
         });
-      })
-      .catch((err) => {
-        console.log(err);
+    } else {
+      updateTodoOffline(data, (res) => {
+        console.log('updated');
         dispatch({
-          type: actions.CHANGE_LOADING,
-          payload: false,
+          type: actions.UPDATE_TASK_OFFLINE,
+          payload: res,
+        });
+        dispatch({
+          type: actions.ENQUEUE_TASK,
+          method: 'patch',
+          url: `https://jsonplaceholder.typicode.com/todos/${data.id}`,
+          payload: datum,
         });
       });
+    }
   };
 
   const renderTasks = () => {
@@ -281,6 +428,28 @@ function Home() {
               });
             }}
           />
+        </CustomDialog>
+        <CustomDialog
+          state={state.syncDialog}
+          Title="Syncing Offline Tasks"
+          Description="Please wait"
+          handleClose={() => {
+            dispatch({
+              type: actions.SYNC_DIALOG_STATE,
+              payload: false,
+            });
+          }}
+          actions={false}>
+          <div
+            style={{
+              display: 'flex',
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: 30,
+            }}>
+            <CircularProgress color="secondary" />
+          </div>
         </CustomDialog>
         <AppBar position="static" classes={{ root: classes.appBar }}>
           <Toolbar>
