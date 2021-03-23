@@ -76,7 +76,7 @@ self.addEventListener('install', (event) => {
 });
 
 // Cache and return requests
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (evt) => {
   // event.respondWith(
   //   caches.match(event.request).then(function (response) {
   //     // Cache hit - return response
@@ -95,10 +95,10 @@ self.addEventListener('fetch', (event) => {
           return (
             cacheRes ||
             fetch(evt.request).then((fetchRes) => {
-              return caches.open(dynamicCacheName).then((cache) => {
+              return caches.open(CACHE_NAME).then((cache) => {
                 cache.put(evt.request.url, fetchRes.clone());
                 // check cached items size
-                limitCacheSize(dynamicCacheName, 15);
+                limitCacheSize(CACHE_NAME, 15);
                 return fetchRes;
               });
             })
