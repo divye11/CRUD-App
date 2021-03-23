@@ -9,7 +9,6 @@
 
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://bit.ly/CRA-PWA
-require('dotenv').config();
 
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
@@ -22,9 +21,7 @@ const isLocalhost = Boolean(
 );
 
 export function register(config) {
-  console.log('registering', process.env.NODE_ENV, navigator);
   if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
-    console.log('in production mode');
     // The URL constructor is available in all browsers that support SW.
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
     if (publicUrl.origin !== window.location.origin) {
@@ -43,23 +40,17 @@ export function register(config) {
 
         // Add some additional logging to localhost, pointing developers to the
         // service worker/PWA documentation.
-        navigator.serviceWorker.ready
-          .then(() => {
-            console.log(
-              'This web app is being served cache-first by a service ' +
-                'worker. To learn more, visit https://bit.ly/CRA-PWA',
-            );
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+        navigator.serviceWorker.ready.then(() => {
+          console.log(
+            'This web app is being served cache-first by a service ' +
+              'worker. To learn more, visit https://bit.ly/CRA-PWA',
+          );
+        });
       } else {
         // Is not localhost. Just register service worker
         registerValidSW(swUrl, config);
       }
     });
-  } else {
-    console.log('either not in production or no sw');
   }
 }
 
@@ -67,7 +58,6 @@ function registerValidSW(swUrl, config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
-      console.log('registered', swUrl);
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {
