@@ -11,6 +11,9 @@ const assets = [
   '/src/index.css',
   '/src/App.test.js',
   '/static/',
+  '/js/',
+  '/fonts/',
+  '/styles/',
   // 'https://unpkg.com/@material-ui/core@latest/umd/material-ui.production.min.js',
 ];
 
@@ -42,7 +45,10 @@ self.addEventListener('activate', (evt) => {
 
 // fetch events
 self.addEventListener('fetch', (evt) => {
-  if (evt.request.url.indexOf('jsonplaceholder.typicode.com') === -1) {
+  if (
+    evt.request.url.indexOf('jsonplaceholder.typicode.com') === -1 &&
+    evt.request.url.indexOf(process.env.PUBLIC_URL) === -1
+  ) {
     evt.respondWith(
       caches
         .match(evt.request)
