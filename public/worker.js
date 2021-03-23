@@ -43,37 +43,37 @@ self.addEventListener('activate', (evt) => {
 });
 
 // fetch events
-self.addEventListener('fetch', (evt) => {
-  if (
-    evt.request.url.indexOf('jsonplaceholder.typicode.com') > -1
-    // evt.request.url.indexOf('.vercel.app/') > -1
-  ) {
-    return;
-  } else {
-    evt.respondWith(
-      caches
-        .match(evt.request)
-        .then((cacheRes) => {
-          return (
-            cacheRes ||
-            fetch(evt.request).then((fetchRes) => {
-              return caches.open(dynamicCacheName).then((cache) => {
-                cache.put(evt.request.url, fetchRes.clone());
-                // check cached items size
-                // limitCacheSize(dynamicCacheName, 15);
-                return fetchRes;
-              });
-            })
-          );
-        })
-        .catch(() => {
-          if (evt.request.url.indexOf('.html') > -1) {
-            return caches.match('/pages/fallback.html');
-          }
-        }),
-    );
-  }
-});
+// self.addEventListener('fetch', (evt) => {
+//   if (
+//     evt.request.url.indexOf('jsonplaceholder.typicode.com') > -1
+//     // evt.request.url.indexOf('.vercel.app/') > -1
+//   ) {
+//     return;
+//   } else {
+//     evt.respondWith(
+//       caches
+//         .match(evt.request)
+//         .then((cacheRes) => {
+//           return (
+//             cacheRes ||
+//             fetch(evt.request).then((fetchRes) => {
+//               return caches.open(dynamicCacheName).then((cache) => {
+//                 cache.put(evt.request.url, fetchRes.clone());
+//                 // check cached items size
+//                 // limitCacheSize(dynamicCacheName, 15);
+//                 return fetchRes;
+//               });
+//             })
+//           );
+//         })
+//         .catch(() => {
+//           if (evt.request.url.indexOf('.html') > -1) {
+//             return caches.match('/pages/fallback.html');
+//           }
+//         }),
+//     );
+//   }
+// });
 
 // // Install a service worker
 // self.addEventListener('install', (event) => {
@@ -86,19 +86,19 @@ self.addEventListener('fetch', (evt) => {
 //   );
 // });
 
-// // Cache and return requests
-// self.addEventListener('fetch', (event) => {
-//   console.log(event);
-//   event.respondWith(
-//     caches.match(event.request).then(function (response) {
-//       // Cache hit - return response
-//       if (response) {
-//         return response;
-//       }
-//       return fetch(event.request);
-//     }),
-//   );
-// });
+// Cache and return requests
+self.addEventListener('fetch', (event) => {
+  console.log(event);
+  event.respondWith(
+    caches.match(event.request).then(function (response) {
+      // Cache hit - return response
+      if (response) {
+        return response;
+      }
+      return fetch(event.request);
+    }),
+  );
+});
 
 // // Update a service worker
 // self.addEventListener('activate', (event) => {
