@@ -76,41 +76,16 @@ self.addEventListener('install', (event) => {
 });
 
 // Cache and return requests
-self.addEventListener('fetch', (evt) => {
-  // event.respondWith(
-  //   caches.match(event.request).then(function (response) {
-  //     // Cache hit - return response
-  //     if (response) {
-  //       return response;
-  //     }
-  //     return fetch(event.request);
-  //   }),
-  // );
-  if (evt.request.url.indexOf('jsonplaceholder.typicode.com') === -1) {
-    console.log('does not begin with our api');
-    evt.respondWith(
-      caches
-        .match(evt.request)
-        .then((cacheRes) => {
-          return (
-            cacheRes ||
-            fetch(evt.request).then((fetchRes) => {
-              return caches.open(CACHE_NAME).then((cache) => {
-                cache.put(evt.request.url, fetchRes.clone());
-                // check cached items size
-                limitCacheSize(CACHE_NAME, 15);
-                return fetchRes;
-              });
-            })
-          );
-        })
-        .catch(() => {
-          if (evt.request.url.indexOf('.html') > -1) {
-            return caches.match('/pages/fallback.html');
-          }
-        }),
-    );
-  }
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then(function (response) {
+      // Cache hit - return response
+      if (response) {
+        return response;
+      }
+      return fetch(event.request);
+    }),
+  );
 });
 
 // Update a service worker
