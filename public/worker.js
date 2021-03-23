@@ -27,7 +27,7 @@ self.addEventListener('fetch', (event) => {
 
 // Update a service worker
 self.addEventListener('activate', (event) => {
-  var cacheWhitelist = ['pwa-task-manager'];
+  var cacheWhitelist = ['pwa-todo-manager'];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
