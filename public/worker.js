@@ -10,6 +10,7 @@ const assets = [
   '/src/index.js',
   '/src/index.css',
   '/src/App.test.js',
+  '/static/',
   // 'https://unpkg.com/@material-ui/core@latest/umd/material-ui.production.min.js',
 ];
 
