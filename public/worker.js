@@ -1,5 +1,5 @@
 var CACHE_NAME = 'pwa-todo-manager';
-var urlsToCache = ['/'];
+var urlsToCache = ['/', '/styles/styles.css', '/script/webpack-bundle.js'];
 
 // Install a service worker
 self.addEventListener('install', (event) => {

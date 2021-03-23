@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect } from 'react';
+import React, { useReducer, useEffect, useContext } from 'react';
 import {
   CssBaseline,
   AppBar,
@@ -14,6 +14,7 @@ import {
 import { INITIAL_STATE, reducer } from './Reducer';
 import { fetchTodos, createTodo, UpdateTodo, RemoveTodo } from '../../API/Home';
 import useNetwork from '../../helpers/InternetStatus';
+import { InternetContext } from '../../Contexts/InternetContext';
 import {
   getTodos,
   addTodoOffline,
@@ -37,7 +38,24 @@ import axios from 'axios';
 function Home() {
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
-  const internet = useNetwork();
+  const { internet, setInternet } = useContext(InternetContext);
+
+  function updateNetwork() {
+    console.log('changin status');
+    setInternet(window.navigator.onLine, () => {
+      console.log('internet status changed', window.navigator.onLine);
+    });
+  }
+
+  useEffect(() => {
+    console.log('calling here');
+    window.addEventListener('offline', updateNetwork);
+    window.addEventListener('online', updateNetwork);
+    return () => {
+      window.removeEventListener('offline', updateNetwork);
+      window.removeEventListener('online', updateNetwork);
+    };
+  });
 
   useEffect(() => {
     dispatch({
@@ -112,10 +130,16 @@ function Home() {
   };
 
   useEffect(() => {
+    console.log('component did  mount');
     dispatch({
       type: actions.CHANGE_LOADING,
       payload: true,
     });
+    dispatch({
+      type: actions.CHANGE_INTERNET_STATUS,
+      payload: internet,
+    });
+    console.log(internet);
     if (internet) {
       console.log('internet available');
       fetchTodos()
