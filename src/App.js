@@ -4,6 +4,7 @@ import Provider from './helpers/Providers';
 import { useContext, useEffect } from 'react';
 import { InternetContext } from './Contexts/InternetContext';
 
+require('dotenv').config();
 function App() {
   // const { setInternet } = useContext(InternetContext);
 
