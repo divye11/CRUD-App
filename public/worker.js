@@ -47,7 +47,6 @@ self.addEventListener('activate', (evt) => {
 self.addEventListener('fetch', (evt) => {
   if (
     evt.request.url.indexOf('jsonplaceholder.typicode.com') === -1 ||
-    evt.request.url.indexOf(process.env.PUBLIC_URL) === -1 ||
     evt.request.url.indexOf('https://crud-app-phi.vercel.app/') === -1
   ) {
     evt.respondWith(
