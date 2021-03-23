@@ -42,36 +42,82 @@ self.addEventListener('activate', (evt) => {
 });
 
 // fetch events
-self.addEventListener('fetch', (evt) => {
-  if (
-    evt.request.url.indexOf('jsonplaceholder.typicode.com') > -1
-    // evt.request.url.indexOf('.vercel.app/') > -1
-  ) {
+self.addEventListener('fetch', (event) => {
+  console.log(event);
+
+  // if (
+  //   evt.request.url.indexOf('jsonplaceholder.typicode.com') > -1
+  //   // evt.request.url.indexOf('.vercel.app/') > -1
+  // ) {
+  //   return;
+  // } else {
+  //   evt.respondWith(
+  //     caches
+  //       .match(evt.request)
+  //       .then((cacheRes) => {
+  //         return (
+  //           cacheRes ||
+  //           fetch(evt.request).then((fetchRes) => {
+  //             return caches.open(dynamicCacheName).then((cache) => {
+  //               cache.put(evt.request.url, fetchRes.clone());
+  //               // check cached items size
+  //               // limitCacheSize(dynamicCacheName, 15);
+  //               return fetchRes;
+  //             });
+  //           })
+  //         );
+  //       })
+  //       .catch(() => {
+  //         if (evt.request.url.indexOf('.html') > -1) {
+  //           return caches.match('/pages/fallback.html');
+  //         }
+  //       }),
+  //   );
+  // }
+  // Parse the URL:
+  const requestURL = new URL(event.request.url);
+  const {
+    target: { location },
+    request,
+  } = event;
+
+  // Handle requests to a particular host specifically
+  if (requestURL.hostname.indexOf('.vercel.app') > -1) {
+    event.respondWith(/* some combination of patterns */);
     return;
-  } else {
-    evt.respondWith(
-      caches
-        .match(evt.request)
-        .then((cacheRes) => {
-          return (
-            cacheRes ||
-            fetch(evt.request).then((fetchRes) => {
-              return caches.open(dynamicCacheName).then((cache) => {
-                cache.put(evt.request.url, fetchRes.clone());
-                // check cached items size
-                // limitCacheSize(dynamicCacheName, 15);
-                return fetchRes;
-              });
-            })
-          );
-        })
-        .catch(() => {
-          if (evt.request.url.indexOf('.html') > -1) {
-            return caches.match('/pages/fallback.html');
-          }
-        }),
-    );
   }
+  // Routing for local URLs
+  if (requestURL.origin == location.origin) {
+    // Handle article URLs
+    if (/^\/article\//.test(requestURL.pathname)) {
+      event.respondWith(/* some other combination of patterns */);
+      return;
+    }
+    if (requestURL.pathname.endsWith('.webp')) {
+      event.respondWith(/* some other combination of patterns */);
+      return;
+    }
+    if (request.method == 'POST') {
+      event.respondWith(/* some other combination of patterns */);
+      return;
+    }
+    if (/cheese/.test(requestURL.pathname)) {
+      event.respondWith(
+        new Response('Flagrant cheese error', {
+          status: 512,
+        }),
+      );
+      return;
+    }
+  }
+
+  // A sensible default pattern
+  event.respondWith(
+    (async function () {
+      const cachedResponse = await caches.match(event.request);
+      return cachedResponse || fetch(event.request);
+    })(),
+  );
 });
 
 // // Install a service worker
