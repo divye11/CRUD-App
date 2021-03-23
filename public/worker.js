@@ -1,10 +1,11 @@
-// var CACHE_NAME = 'pwa-todo-manager';
-const staticCacheName = 'site-static-v2';
-const dynamicCacheName = 'site-dynamic-v2';
+var CACHE_NAME = 'pwa-todo-ver1';
+// const staticCacheName = 'site-static-v2';
+// const dynamicCacheName = 'site-dynamic-v2';
+const self = this;
 
 const assets = [
   '/',
-  '/index.html',
+  'index.html',
   '/src/App.js',
   '/src/App.css',
   '/src/index.js',
@@ -20,25 +21,41 @@ const assets = [
 self.addEventListener('install', (evt) => {
   //console.log('service worker installed');
   evt.waitUntil(
-    caches.open(staticCacheName).then((cache) => {
+    caches.open(CACHE_NAME).then((cache) => {
       console.log('caching shell assets');
       cache.addAll(assets);
     }),
   );
 });
 
-// activate event
-self.addEventListener('activate', (evt) => {
-  //console.log('service worker activated');
-  evt.waitUntil(
-    caches.keys().then((keys) => {
-      //console.log(keys);
-      return Promise.all(
-        keys
-          .filter((key) => key !== staticCacheName && key !== dynamicCacheName)
-          .map((key) => caches.delete(key)),
-      );
-    }),
+// // activate event
+// self.addEventListener('activate', (evt) => {
+//   //console.log('service worker activated');
+//   evt.waitUntil(
+//     caches.keys().then((keys) => {
+//       //console.log(keys);
+//       return Promise.all(
+//         keys
+//           .filter((key) => key !== staticCacheName && key !== dynamicCacheName)
+//           .map((key) => caches.delete(key)),
+//       );
+//     }),
+//   );
+// });
+
+self.addEventListener('activate', (event) => {
+  const cacheWhitelist = [];
+  cacheWhitelist.push(CACHE_NAME);
+  event.waitUntil(
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames.map((cacheName) => {
+          if (!cacheWhitelist.includes(cacheName)) {
+            return caches.delete(cacheName);
+          }
+        }),
+      ),
+    ),
   );
 });
 
@@ -88,15 +105,23 @@ self.addEventListener('activate', (evt) => {
 
 // Cache and return requests
 self.addEventListener('fetch', (event) => {
-  console.log(event);
+  console.log('fetch', event);
   event.respondWith(
-    caches.match(event.request).then(function (response) {
-      // Cache hit - return response
-      if (response) {
-        return response;
-      }
-      return fetch(event.request);
-    }),
+    caches
+      .match(event.request)
+      .then(function (response) {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).catch((err) => {
+          console.log('inside');
+          caches.match('/index.html');
+        });
+      })
+      .catch((err) => {
+        console.log('could not find in cache', err);
+      }),
   );
 });
 

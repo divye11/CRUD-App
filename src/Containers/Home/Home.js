@@ -46,8 +46,12 @@ function Home() {
   );
   function updateNetwork() {
     setInternet(window.navigator.onLine, () => {
-      console.log('internet status changed', window.navigator.onLine);
-      if (internet && offlineTasks.length > 0) {
+      console.log(
+        'internet status changed',
+        window.navigator.onLine,
+        offlineTasks.length,
+      );
+      if (window.navigator.onLine && offlineTasks.length > 0) {
         PerformPendingReq();
       }
     });
@@ -74,7 +78,8 @@ function Home() {
       type: actions.SYNC_DIALOG_STATE,
       payload: true,
     });
-    state.offlineTasks.forEach(async (task) => {
+    offlineTasks.forEach(async (task) => {
+      console.log(task);
       dispatch({
         type: actions.SYNC_DIALOG_STATE,
         payload: true,
